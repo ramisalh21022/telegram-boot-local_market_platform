@@ -1,19 +1,20 @@
 {
   "name": "local_market_platform",
   "version": "1.0.0",
-  "description": "",
+  "description": "Local Market API with Supabase",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "body-parser": "^2.2.0",
+    "express": "^4.19.2",
+    "body-parser": "^1.20.2",
     "cors": "^2.8.5",
-    "express": "^5.1.0",
-    "pg": "^8.16.3"
+    "axios": "^1.6.8"
   }
 }
+
