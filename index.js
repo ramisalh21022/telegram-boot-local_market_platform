@@ -66,9 +66,9 @@ app.post('/clients', async (req, res) => {
     try {
         const { telegram_id } = req.body;
         // تحقق إذا موجود
-        const check = await axios.get(`${SUPABASE_URL}/rest/v1/clients?phone=eq.${telegram_id}`, {
-            headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
-        });
+        const check = await axios.get(`${SUPABASE_URL}/rest/v1/clients?phone=eq.${req.body.phone}`, {
+  headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+});
         if (check.data.length > 0) return res.json(check.data[0]);
         // إنشاء جديد
         const response = await axios.post(`${SUPABASE_URL}/rest/v1/clients`, 
@@ -154,4 +154,5 @@ app.post('/order_items', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
