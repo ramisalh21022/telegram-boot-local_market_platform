@@ -9,6 +9,7 @@ app.use(bodyParser.json());
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;
+const SUPABASE_BUCKET = "food-stor";
 
 // ----------- منتجات ----------
 app.get('/products/search', async (req, res) => {
@@ -25,9 +26,17 @@ app.get('/products/search', async (req, res) => {
                 'Content-Type': 'application/json'
             }
         });
-        res.json(response.data);
+       // تحويل image_url إلى روابط عامة من Supabase Storage
+        const productsWithPublicUrls = response.data.map(product => {
+            if (product.image_url) {
+                product.image_url = `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/${product.image_url}`;
+            }
+            return product;
+        });
+
+        res.json(productsWithPublicUrls);
     } catch (err) {
-        console.error(err.message);
+        console.error("API error:", err.response?.data || err.message);
         res.status(500).send('Server Error');
     }
 });
@@ -145,3 +154,4 @@ app.post('/order_items', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
