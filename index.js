@@ -10,7 +10,7 @@ app.use(bodyParser.json());
 
 const SUPABASE_URL = process.env.SUPABASE_URL;       // رابط مشروع Supabase
 const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;  // مفتاح API
-
+const SUPABASE_BUCKET = "food-stor";
 // البحث عن المنتجات
 app.get('/products/search', async (req, res) => {
     try {
@@ -29,9 +29,17 @@ app.get('/products/search', async (req, res) => {
             }
         });
 
-        res.json(response.data);
+        // تحويل image_url إلى روابط عامة من Supabase Storage
+        const productsWithPublicUrls = response.data.map(product => {
+            if (product.image_url) {
+                product.image_url = `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_BUCKET}/${product.image_url}`;
+            }
+            return product;
+        });
+
+        res.json(productsWithPublicUrls);
     } catch (err) {
-        console.error(err.message);
+        console.error("API error:", err.response?.data || err.message);
         res.status(500).send('Server Error');
     }
 });
