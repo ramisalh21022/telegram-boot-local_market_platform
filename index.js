@@ -2,34 +2,34 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const pool = require('./db');
+const axios = require('axios');
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+const SUPABASE_URL = process.env.SUPABASE_URL;       // رابط مشروع Supabase
+const SUPABASE_KEY = process.env.SUPABASE_ANON_KEY;  // مفتاح API
 
 // البحث عن المنتجات
 app.get('/products/search', async (req, res) => {
     try {
         const { keyword, category } = req.query;
 
-        let query = 'SELECT * FROM public.products_comp WHERE 1=1';
-        let params = [];
+        // بناء الاستعلام
+        let filter = '';
+        if (keyword) filter += `product_name=ilike.*${keyword}*`;
+        if (category) filter += (filter ? `&category=eq.${category}` : `category=eq.${category}`);
 
-        if (keyword) {
-            params.push(`%${keyword}%`);
-            query += ` AND product_name ILIKE $${params.length}`;
-        }
+        const response = await axios.get(`${SUPABASE_URL}/rest/v1/products_comp?${filter}&order=created_at.desc`, {
+            headers: {
+                'apikey': SUPABASE_KEY,
+                'Authorization': `Bearer ${SUPABASE_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
 
-        if (category) {
-            params.push(category);
-            query += ` AND category = $${params.length}`;
-        }
-
-        query += ' ORDER BY created_at DESC'; // أحدث المنتجات أولاً
-
-        const result = await pool.query(query, params);
-        res.json(result.rows);
+        res.json(response.data);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
@@ -41,14 +41,20 @@ app.post('/products', async (req, res) => {
     try {
         const { company_id, product_name, category, price, image_url } = req.body;
 
-        const result = await pool.query(
-            `INSERT INTO public.products_comp 
-            (company_id, product_name, category, price, image_url) 
-            VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-            [company_id, product_name, category, price, image_url]
+        const response = await axios.post(
+            `${SUPABASE_URL}/rest/v1/products_comp`,
+            { company_id, product_name, category, price, image_url },
+            {
+                headers: {
+                    'apikey': SUPABASE_KEY,
+                    'Authorization': `Bearer ${SUPABASE_KEY}`,
+                    'Content-Type': 'application/json',
+                    'Prefer': 'return=representation' // لإرجاع الصف الذي تم إضافته
+                }
+            }
         );
 
-        res.json(result.rows[0]);
+        res.json(response.data[0]);
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server Error');
