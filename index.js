@@ -111,6 +111,7 @@ app.get('/clients', async (req, res) => {
 // تحديث رقم الهاتف للعميل
 app.patch('/clients/updatePhone', async (req, res) => {
   try {
+      console.log("updatePhone req.body:", req.body); // ✅ تحقق
     const { id, phone } = req.body;
     if (!id || !phone) {
       return res.status(400).json({ error: "id and phone are required" });
@@ -240,6 +241,7 @@ app.post('/order_items', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 
 
