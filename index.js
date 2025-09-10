@@ -63,29 +63,39 @@ app.post('/products', async (req, res) => {
 
 // ----------- العملاء ----------
 app.post('/clients', async (req, res) => {
-    try {
-        const { telegram_id } = req.body;
-        // تحقق إذا موجود
-        const check = await axios.get(`${SUPABASE_URL}/rest/v1/clients?phone=eq.${req.body.phone}`, {
-  headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+  try {
+    const phone = req.body.phone || req.body.telegram_id;
+
+    // تحقق إذا العميل موجود
+    const check = await axios.get(`${SUPABASE_URL}/rest/v1/clients?phone=eq.${phone}`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    if (check.data.length > 0) return res.json(check.data[0]);
+
+    // إنشاء جديد
+    const newClient = {
+      phone: phone,
+      store_name: `Client-${phone}`,
+      owner_name: `User-${phone}`,
+      address: null
+    };
+
+    const response = await axios.post(`${SUPABASE_URL}/rest/v1/clients`, newClient, {
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      }
+    });
+
+    res.json(response.data[0]);
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+    res.status(500).send('Server Error');
+  }
 });
-        if (check.data.length > 0) return res.json(check.data[0]);
-        // إنشاء جديد
-        const response = await axios.post(`${SUPABASE_URL}/rest/v1/clients`, 
-            { phone: telegram_id, store_name: `Client-${telegram_id}`, owner_name: `User-${telegram_id}` },
-            { headers: {
-                'apikey': SUPABASE_KEY,
-                'Authorization': `Bearer ${SUPABASE_KEY}`,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-            }}
-        );
-        res.json(response.data[0]);
-    } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
-    }
-});
+
 
 // ----------- الطلبات ----------
 app.post('/orders/init', async (req, res) => {
@@ -154,5 +164,6 @@ app.post('/order_items', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 
