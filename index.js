@@ -97,6 +97,17 @@ app.post('/clients', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+app.get('/clients', async (req, res) => {
+  try {
+    const response = await axios.get(`${SUPABASE_URL}/rest/v1/clients`, {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+    });
+    res.json(response.data);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
 
 
 // ----------- الطلبات ----------
@@ -166,6 +177,7 @@ app.post('/order_items', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 
 
