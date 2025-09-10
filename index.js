@@ -65,6 +65,8 @@ app.post('/products', async (req, res) => {
 app.post('/clients', async (req, res) => {
   try {
     const phone = req.body.phone || req.body.telegram_id;
+    const owner_name = req.body.owner_name || `User-${phone}`;
+    const store_name = req.body.store_name || `Client-${phone}`;
 
     // تحقق إذا العميل موجود
     const check = await axios.get(`${SUPABASE_URL}/rest/v1/clients?phone=eq.${phone}`, {
@@ -72,12 +74,12 @@ app.post('/clients', async (req, res) => {
     });
     if (check.data.length > 0) return res.json(check.data[0]);
 
-    // إنشاء جديد
+    // إنشاء جديد بالاسم الحقيقي
     const newClient = {
-      phone: phone,
-      store_name: `Client-${phone}`,
-      owner_name: `User-${phone}`,
-      address: null
+      phone,
+      owner_name,
+      store_name,
+      address: req.body.address || null
     };
 
     const response = await axios.post(`${SUPABASE_URL}/rest/v1/clients`, newClient, {
@@ -91,7 +93,7 @@ app.post('/clients', async (req, res) => {
 
     res.json(response.data[0]);
   } catch (err) {
-    console.error(err.response?.data || err.message);
+    console.error(err.message);
     res.status(500).send('Server Error');
   }
 });
@@ -164,6 +166,7 @@ app.post('/order_items', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 
 
