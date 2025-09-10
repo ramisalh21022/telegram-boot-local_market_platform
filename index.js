@@ -108,8 +108,71 @@ app.get('/clients', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+// تحديث رقم الهاتف للعميل
+app.patch('/clients/updatePhone', async (req, res) => {
+  try {
+    const { id, phone } = req.body;
+    if (!id || !phone) {
+      return res.status(400).json({ error: "id and phone are required" });
+    }
+
+    const response = await axios.patch(
+      `${SUPABASE_URL}/rest/v1/clients?id=eq.${id}`,
+      { phone },
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        }
+      }
+    );
+
+    if (!response.data.length) {
+      return res.status(404).json({ error: "Client not found" });
+    }
+
+    res.json(response.data[0]);
+  } catch (err) {
+    console.error("updatePhone error:", err.response?.data || err.message);
+    res.status(500).send("Server Error");
+  }
+});
 
 
+// ----------- الطلبات ----------
+// تأكيد الطلب
+app.post('/orders/confirm', async (req, res) => {
+  try {
+    const { order_id } = req.body;
+    if (!order_id) {
+      return res.status(400).json({ error: "order_id is required" });
+    }
+
+    const response = await axios.patch(
+      `${SUPABASE_URL}/rest/v1/orders?id=eq.${order_id}`,
+      { status: "confirmed" },
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': `Bearer ${SUPABASE_KEY}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
+        }
+      }
+    );
+
+    if (!response.data.length) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json(response.data[0]);
+  } catch (err) {
+    console.error("confirmOrder error:", err.response?.data || err.message);
+    res.status(500).send("Server Error");
+  }
+});
 // ----------- الطلبات ----------
 app.post('/orders/init', async (req, res) => {
     try {
@@ -177,6 +240,7 @@ app.post('/order_items', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 
 
