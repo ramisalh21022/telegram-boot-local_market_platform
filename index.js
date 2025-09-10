@@ -79,7 +79,7 @@ app.post('/clients', async (req, res) => {
       phone,
       owner_name,
       store_name,
-      address: req.body.address || null
+      address: null
     };
 
     const response = await axios.post(`${SUPABASE_URL}/rest/v1/clients`, newClient, {
@@ -166,6 +166,7 @@ app.post('/order_items', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 
 
 
